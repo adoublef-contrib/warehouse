@@ -1,4 +1,4 @@
-module github.com/function09/warehouse_management
+module github.com/adoublef-contrib/warehouse-management
 
 go 1.24.4
 
