@@ -12,26 +12,26 @@ type DB struct {
 	RWC *pgxpool.Pool
 }
 
-func (d *DB) SearchCategory(ctx context.Context, name string) (*Category, error) {
+func (d *DB) SearchCategory(ctx context.Context, name string) (Category, error) {
 	const stmt = "SELECT category_id, category_name FROM categories WHERE category_name = $1"
 	r := d.RWC.QueryRow(ctx, stmt, name)
 	var c Category
 	err := r.Scan(&c.ID, &c.Name)
 	if err != nil {
-		return nil, fmt.Errorf("Error querying category: %v", err)
+		return Category{}, fmt.Errorf("Error querying category: %v", err)
 	}
-	return &c, nil
+	return c, nil
 }
 
-func (d *DB) Category(ctx context.Context, id int64) (*Category, error) {
+func (d *DB) Category(ctx context.Context, id int64) (Category, error) {
 	const stmt = "SELECT category_id, category_name FROM categories WHERE category_id = $1"
 	r := d.RWC.QueryRow(ctx, stmt, id)
 	var c Category
 	err := r.Scan(&c.ID, &c.Name)
 	if err != nil {
-		return nil, fmt.Errorf("Error querying category: %v", err)
+		return Category{}, fmt.Errorf("Error querying category: %v", err)
 	}
-	return &c, nil
+	return c, nil
 }
 
 func (d *DB) AddCategory(ctx context.Context, name string) (int64, error) {
@@ -73,40 +73,40 @@ func (d *DB) DeleteCategory(ctx context.Context, id int64) (int64, error) {
 	return did, nil
 }
 
-func (d *DB) Product(ctx context.Context, id int64) (*Product, error) {
+func (d *DB) Product(ctx context.Context, id int64) (Product, error) {
 	const stmt = "SELECT * FROM products WHERE product_id=$1"
 	row := d.RWC.QueryRow(ctx, stmt, id)
 	var p Product
 	err := row.Scan(&p.ID, &p.Category, &p.Name, &p.Stock)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return nil, fmt.Errorf("product with id %d not found", id)
+			return Product{}, fmt.Errorf("product with id %d not found", id)
 		}
-		return nil, err
+		return Product{}, err
 	}
-	return &p, nil
+	return p, nil
 }
 
-func (d *DB) SearchProduct(ctx context.Context, name string) ([]*Product, error) {
+func (d *DB) SearchProduct(ctx context.Context, name string) ([]Product, error) {
 	const stmt = "SELECT product_id, product_name, stock FROM products WHERE product_name ILIKE $1"
 	query := "%" + name + "%"
-	rows, err := d.RWC.Query(ctx, stmt, query)
+	rr, err := d.RWC.Query(ctx, stmt, query)
 	if err != nil {
 		return nil, err
 	}
-	defer rows.Close()
-	var productList []*Product
-	for rows.Next() {
-		p := &Product{}
-		if err := rows.Scan(&p.ID, &p.Name, &p.Stock); err != nil {
+	defer rr.Close()
+	var pp []Product
+	for rr.Next() {
+		var p Product
+		if err := rr.Scan(&p.ID, &p.Name, &p.Stock); err != nil {
 			return nil, err
 		}
-		productList = append(productList, p)
+		pp = append(pp, p)
 	}
-	if err := rows.Err(); err != nil {
+	if err := rr.Err(); err != nil {
 		return nil, err
 	}
-	return productList, nil
+	return pp, nil
 }
 
 func (d *DB) ProductsByCategory(ctx context.Context, category string) ([]Product, error) {
@@ -130,25 +130,25 @@ func (d *DB) ProductsByCategory(ctx context.Context, category string) ([]Product
 	return pp, nil
 }
 
-func (d *DB) Products(ctx context.Context, limit int, offset int) ([]*Product, error) {
+func (d *DB) Products(ctx context.Context, limit int, offset int) ([]Product, error) {
 	const stmt = "SELECT product_id, product_name, stock FROM products ORDER BY product_id LIMIT $1 OFFSET $2"
-	rows, err := d.RWC.Query(ctx, stmt, limit, offset)
+	rr, err := d.RWC.Query(ctx, stmt, limit, offset)
 	if err != nil {
 		return nil, err
 	}
-	defer rows.Close()
-	var productList []*Product
-	for rows.Next() {
+	defer rr.Close()
+	var pp []Product
+	for rr.Next() {
 		var p Product
-		if err := rows.Scan(&p.ID, &p.Name, &p.Stock); err != nil {
+		if err := rr.Scan(&p.ID, &p.Name, &p.Stock); err != nil {
 			return nil, err
 		}
-		productList = append(productList, &p)
+		pp = append(pp, p)
 	}
-	if err := rows.Err(); err != nil {
+	if err := rr.Err(); err != nil {
 		return nil, err
 	}
-	return productList, nil
+	return pp, nil
 }
 
 func (d *DB) AddProduct(ctx context.Context, name string, stock int, category string) (int64, error) {
@@ -168,7 +168,7 @@ func (d *DB) UpdateProduct(ctx context.Context, id int64, name string, stock int
 	if err != nil {
 		return fmt.Errorf("failed to update product: %w", err)
 	}
-	if rowsAffected := result.RowsAffected(); rowsAffected == 0 {
+	if n := result.RowsAffected(); n == 0 {
 		return fmt.Errorf("failed to file product found with ID %d", id)
 	}
 	return nil
@@ -180,7 +180,7 @@ func (d *DB) DeleteProduct(ctx context.Context, id int64) error {
 	if err != nil {
 		return fmt.Errorf("failed to delete product: %w", err)
 	}
-	if rowsAffected := result.RowsAffected(); rowsAffected == 0 {
+	if n := result.RowsAffected(); n == 0 {
 		return fmt.Errorf("failed to file product found with ID %d", id)
 	}
 	return nil
