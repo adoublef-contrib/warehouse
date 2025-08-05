@@ -135,7 +135,7 @@ func (h *Handler) UpdateCategory(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	id, err := h.categoryService.UpdateCategory(cat.CategoryName, cat.CategoryID)
+	id, err := h.categoryService.UpdateCategory(cat.Name, cat.ID)
 
 	if err != nil {
 
@@ -152,7 +152,7 @@ func (h *Handler) UpdateCategory(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-type", "application/json")
 
-	if err := json.NewEncoder(w).Encode(map[string]any{"message": "Successfully updated category", "code": http.StatusOK, "newCat": cat.CategoryName, "id": id}); err != nil {
+	if err := json.NewEncoder(w).Encode(map[string]any{"message": "Successfully updated category", "code": http.StatusOK, "newCat": cat.Name, "id": id}); err != nil {
 		fmt.Printf("failed to encode json: %v", err)
 	}
 }
