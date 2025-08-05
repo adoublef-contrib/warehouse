@@ -11,7 +11,6 @@ import (
 	"github.com/adoublef-contrib/warehouse-management/internal/category"
 	"github.com/adoublef-contrib/warehouse-management/internal/net/http"
 	"github.com/jackc/pgx/v5/pgxpool"
-	_ "github.com/lib/pq"
 	"golang.org/x/sync/errgroup"
 	"golang.org/x/sys/unix"
 )
