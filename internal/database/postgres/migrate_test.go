@@ -7,7 +7,7 @@ import (
 	"os"
 	"testing"
 
-	"github.com/function09/warehouse_management/internal/runtime/postgres"
+	"github.com/adoublef-contrib/warehouse-management/internal/runtime/postgres"
 	"github.com/testcontainers/testcontainers-go"
 	"go.adoublef.dev/testing/is"
 )

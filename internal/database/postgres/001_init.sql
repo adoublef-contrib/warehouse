@@ -1,6 +1,6 @@
-create table products (product_id int, product_name text, catergory text, stock int);
-create table categories (catergory_id int, catergory_name text);
+create table categories (category_id serial, category_name text unique); 
+create table products (product_id serial, product_name text unique, category text, stock int);
 
 ---- create above / drop below ----
 
-drop table products, categories;
+drop table categories, products;
