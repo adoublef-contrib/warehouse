@@ -11,11 +11,3 @@ type Product struct {
 	Category string `json:"category"`
 	Stock    int    `json:"stock"`
 }
-
-type Repository interface {
-	GetCategoryByName(n string) (*Category, error)
-	GetCategoryByID(id int) (*Category, error)
-	AddNewCategory(n string) (int64, error)
-	UpdateCategory(n string, id int) (int64, error)
-	DeleteCategory(id int) (int64, error)
-}

@@ -44,19 +44,19 @@ func (d *DB) AddCategory(ctx context.Context, name string) (int64, error) {
 	return id, nil
 }
 
-func (d *DB) UpdateCategory(ctx context.Context, name string, id int64) (int64, error) {
+func (d *DB) UpdateCategory(ctx context.Context, name string, id int64) error {
 	const stmt = "UPDATE categories SET category_name=$1 WHERE category_id=$2 RETURNING category_id"
 	var uid int64
 	err := d.RWC.QueryRow(ctx, stmt, name, id).
 		Scan(&uid)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return 0, fmt.Errorf("Category with ID %d not found: %w", id, err)
+			return fmt.Errorf("Category with ID %d not found: %w", id, err)
 		} else {
-			return 0, fmt.Errorf("Error querying category: %w", err)
+			return fmt.Errorf("Error querying category: %w", err)
 		}
 	}
-	return uid, nil
+	return nil
 }
 
 func (d *DB) DeleteCategory(ctx context.Context, id int64) (int64, error) {
@@ -130,7 +130,7 @@ func (d *DB) ProductsByCategory(ctx context.Context, category string) ([]Product
 	return pp, nil
 }
 
-func (d *DB) Products(ctx context.Context, limit int, offset int) ([]Product, error) {
+func (d *DB) Products(ctx context.Context, limit, offset int64) ([]Product, error) {
 	const stmt = "SELECT product_id, product_name, stock FROM products ORDER BY product_id LIMIT $1 OFFSET $2"
 	rr, err := d.RWC.Query(ctx, stmt, limit, offset)
 	if err != nil {
@@ -151,7 +151,7 @@ func (d *DB) Products(ctx context.Context, limit int, offset int) ([]Product, er
 	return pp, nil
 }
 
-func (d *DB) AddProduct(ctx context.Context, name string, stock int, category string) (int64, error) {
+func (d *DB) AddProduct(ctx context.Context, name string, stock int64, category string) (int64, error) {
 	// Must be modified to not allow duplicate entries
 	const stmt = "INSERT INTO products (product_name, stock, category_id) VALUES ($1, $2, (SELECT category_id FROM categories WHERE category_name = $3)) RETURNING product_id"
 	var id int64
@@ -162,7 +162,7 @@ func (d *DB) AddProduct(ctx context.Context, name string, stock int, category st
 	return id, nil
 }
 
-func (d *DB) UpdateProduct(ctx context.Context, id int64, name string, stock int, category string) error {
+func (d *DB) UpdateProduct(ctx context.Context, id int64, name string, stock int64, category string) error {
 	const stmt = "UPDATE products SET product_name = $1, stock = $2, category_id = (SELECT category_id from categories WHERE category_name = $3) WHERE product_id = $4"
 	result, err := d.RWC.Exec(ctx, stmt, name, stock, category, id)
 	if err != nil {

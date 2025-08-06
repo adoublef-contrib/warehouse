@@ -35,7 +35,7 @@ func TestDB_UpdateCategory(t *testing.T) {
 		is.OK(t, err) // DB.AddCategory
 		is.Equal(t, id, 1)
 
-		_, err = db.UpdateCategory(ctx, "new", id)
+		err = db.UpdateCategory(ctx, "new", id)
 		is.OK(t, err) // DB.UpdateCategory
 
 		c, err := db.Category(ctx, id)
