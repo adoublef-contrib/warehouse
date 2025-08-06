@@ -15,7 +15,7 @@ import (
 	"golang.org/x/sys/unix"
 )
 
-func ConnectToDB(ctx context.Context, url string) (*pgxpool.Pool, error) {
+func newDB(ctx context.Context, url string) (*pgxpool.Pool, error) {
 	rwc, err := pgxpool.New(ctx, url)
 	if err != nil {
 		return nil, fmt.Errorf("failed to return potgres pool: %w", err)
@@ -24,28 +24,28 @@ func ConnectToDB(ctx context.Context, url string) (*pgxpool.Pool, error) {
 }
 
 func main() {
-	if err := run(context.Background()); err != nil {
+	if err := run(context.Background(), os.Getenv); err != nil {
 		fmt.Fprintf(os.Stderr, "ERR: %v\n", err)
 		os.Exit(1)
 	}
 }
 
-func run(ctx context.Context) error {
+func run(ctx context.Context, getenv func(string) string) error {
 	ctx, cancel := signal.NotifyContext(ctx, unix.SIGINT, unix.SIGKILL, unix.SIGTERM)
 	defer cancel()
 
-	connStr := os.Getenv("DATABASE_URL")
+	connStr := getenv("DATABASE_URL")
 	if connStr == "" {
 		log.Fatal("DATABASE_URL not set")
 	}
 
-	conn, err := ConnectToDB(ctx, connStr)
+	conn, err := newDB(ctx, connStr)
 	if err != nil {
-		log.Fatal("APP_PORT not assigned")
+		log.Fatal("database not assigned:" + err.Error())
 	}
 	defer conn.Close()
 
-	port := os.Getenv("APP_PORT")
+	port := getenv("APP_PORT")
 	if port == "" {
 		port = "8080"
 	}
