@@ -32,4 +32,6 @@ DELETE /customers
 
 - [batch endpoints]
 
+---
+
 [batch endpoints]: https://www.codementor.io/blog/batch-endpoints-6olbjay1hd

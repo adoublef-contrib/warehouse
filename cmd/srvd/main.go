@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"net"
 	"os"
 	"os/signal"
 	"time"
@@ -50,9 +51,12 @@ func run(ctx context.Context, getenv func(string) string) error {
 		port = "8080"
 	}
 	s := &http.Server{
-		Addr:    ":" + port,
-		Handler: http.Handler(&category.DB{RWC: conn}),
+		Addr:        ":" + port,
+		Handler:     http.Handler(&category.DB{RWC: conn}),
+		BaseContext: func(l net.Listener) context.Context { return ctx },
 	}
+	s.RegisterOnShutdown(cancel)
+
 	g, ctx := errgroup.WithContext(ctx)
 
 	g.Go(func() error {
