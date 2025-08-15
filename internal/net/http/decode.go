@@ -11,8 +11,6 @@ import (
 	"strings"
 	"time"
 	"unicode/utf8"
-
-	"go.adoublef.dev/runtime/debug"
 )
 
 func newErr(_ int, format string, v ...any) error {
@@ -33,13 +31,11 @@ func Decode[V any](w http.ResponseWriter, r *http.Request, sz int, d time.Durati
 	}
 	if sz > 0 {
 		r.Body = http.MaxBytesReader(w, r.Body, int64(sz))
-		debug.Printf("r.Body = http.MaxBytesReader(w, r.Body, %d)", sz)
 	}
 
 	if d > 0 {
 		rc := http.NewResponseController(w)
 		err = rc.SetReadDeadline(time.Now().Add(d))
-		debug.Printf("%s := rc.SetReadDeadline(time.Now().Add(%v))", err, d)
 		if err != nil {
 			// note: if action not allowed, should maybe wrap this
 			return v, err
@@ -49,7 +45,6 @@ func Decode[V any](w http.ResponseWriter, r *http.Request, sz int, d time.Durati
 	dec := json.NewDecoder(r.Body)
 	dec.DisallowUnknownFields() // important
 	if err := dec.Decode(&v); err != nil {
-		debug.Printf("%v := dec.Decode(&v)", err)
 		var zero V
 		switch {
 		// In some circumstances Decode() may also return an
