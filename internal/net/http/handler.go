@@ -51,7 +51,7 @@ func handleGetProductByID(db *category.DB) http.HandlerFunc {
 		ctx := r.Context()
 		v, err := db.Product(ctx, id)
 		if err != nil {
-			handleError(w, r, err, http.StatusInternalServerError)
+			handleError(w, r, err, http.StatusNotFound)
 			return
 		}
 		respond(w, r, response{Data: []category.Product{v}}, http.StatusOK)
