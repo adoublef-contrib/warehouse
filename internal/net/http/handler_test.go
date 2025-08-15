@@ -17,15 +17,15 @@ import (
 )
 
 func Test_handleGetCategory(t *testing.T) {
+	s, ctx := newServer(t)
+
+	resp, err := post(ctx, s, "/categories", strings.NewReader(`{"name":"test"}`), contentType("application/json"))
+	is.OK(t, err) // POST /categories
+	is.Equal(t, resp.StatusCode, http.StatusOK)
+
+	cat := decode[struct{ ID int64 }](t, resp.Body)
+
 	t.Run("OK", func(t *testing.T) {
-		s, ctx := newServer(t)
-
-		resp, err := post(ctx, s, "/categories", strings.NewReader(`{"name":"test"}`), contentType("application/json"))
-		is.OK(t, err) // POST /categories
-		is.Equal(t, resp.StatusCode, http.StatusOK)
-
-		cat := decode[struct{ ID int64 }](t, resp.Body)
-
 		resp, err = get(ctx, s, "/categories/"+strconv.Itoa(int(cat.ID)))
 		is.OK(t, err) // GET /categories/{category}
 		is.Equal(t, resp.StatusCode, http.StatusOK)
@@ -36,10 +36,24 @@ func Test_handleGetCategory(t *testing.T) {
 	})
 
 	t.Run("ErrNotFound", func(t *testing.T) {
-		s, ctx := newServer(t)
-
-		resp, err := get(ctx, s, "/categories/1")
+		resp, err := get(ctx, s, "/categories/2")
 		is.OK(t, err) // GET /categories/{category}
+		is.Equal(t, resp.StatusCode, http.StatusNotFound)
+	})
+
+	t.Run("Search", func(t *testing.T) {
+		resp, err = get(ctx, s, "/categories/search/name?category=test")
+		is.OK(t, err) // GET /categories/search/name
+		is.Equal(t, resp.StatusCode, http.StatusOK)
+
+		cc := decode[struct{ Data []category.Category }](t, resp.Body)
+		is.Equal(t, len(cc.Data), 1)
+		is.Equal(t, cc.Data[0].Name, "test")
+	})
+
+	t.Run("ErrSearch", func(t *testing.T) {
+		resp, err = get(ctx, s, "/categories/search/name?category=never")
+		is.OK(t, err) // GET /categories/search/name
 		is.Equal(t, resp.StatusCode, http.StatusNotFound)
 	})
 }

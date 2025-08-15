@@ -220,9 +220,6 @@ func handleDeleteProduct(db *category.DB) http.HandlerFunc {
 }
 
 func handleGetCategoryByName(db *category.DB) http.HandlerFunc {
-	type request struct {
-		Name *string `json:"name"`
-	}
 	type response struct {
 		Data []category.Category `json:"data"`
 	}
@@ -238,7 +235,7 @@ func handleGetCategoryByName(db *category.DB) http.HandlerFunc {
 		ctx := r.Context()
 		c, err := db.SearchCategory(ctx, name)
 		if err != nil {
-			handleError(w, r, err, http.StatusInternalServerError)
+			handleError(w, r, err, http.StatusNotFound)
 			return
 		}
 		respond(w, r, response{Data: []category.Category{c}}, http.StatusOK)
