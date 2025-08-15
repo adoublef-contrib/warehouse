@@ -45,7 +45,7 @@ func Test_handleGetProduct(t *testing.T) {
 		is.OK(t, err) // GET /categories/{category}
 		is.Equal(t, resp.StatusCode, http.StatusOK)
 
-		cc := decode[struct{ Data []category.Category }](t, resp.Body)
+		cc := decode[struct{ Data []category.Product }](t, resp.Body)
 		is.Equal(t, len(cc.Data), 1)
 		is.Equal(t, cc.Data[0].Name, "product")
 	})
@@ -61,7 +61,7 @@ func Test_handleGetProduct(t *testing.T) {
 		is.OK(t, err) // GET /products/search/name
 		is.Equal(t, resp.StatusCode, http.StatusOK)
 
-		cc := decode[struct{ Data []category.Category }](t, resp.Body)
+		cc := decode[struct{ Data []category.Product }](t, resp.Body)
 		is.Equal(t, len(cc.Data), 1)
 		is.Equal(t, cc.Data[0].Name, "product")
 	})
@@ -70,9 +70,15 @@ func Test_handleGetProduct(t *testing.T) {
 		resp, err = get(ctx, s, "/products/search/name?category=category")
 		is.OK(t, err) // GET /products/search/name
 		is.Equal(t, resp.StatusCode, http.StatusOK)
-		cc := decode[struct{ Data []category.Category }](t, resp.Body)
-		is.Equal(t, len(cc.Data), 1)
-		is.Equal(t, cc.Data[0].Name, "product")
+		pp := decode[struct{ Data []category.Product }](t, resp.Body)
+		is.Equal(t, len(pp.Data), 1)
+		is.Equal(t, pp.Data[0].Name, "product")
+	})
+}
+
+func Test_handleUpdateCatgegory(t *testing.T) {
+	t.Run("OK", func(t *testing.T) {
+
 	})
 }
 
