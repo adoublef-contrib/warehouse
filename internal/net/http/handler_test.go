@@ -16,6 +16,16 @@ import (
 	"go.adoublef.dev/testing/is"
 )
 
+func Test_handleAddNewProduct(t *testing.T) {
+	t.Run("ErrCategory", func(t *testing.T) {
+		s, ctx := newServer(t)
+
+		resp, err := post(ctx, s, "/products", strings.NewReader(`{"name":"product","stock":10,"category":"never"}`), contentType("application/json"))
+		is.OK(t, err) // POST /products
+		is.Equal(t, resp.StatusCode, http.StatusInternalServerError)
+	})
+}
+
 func Test_handleGetProduct(t *testing.T) {
 	s, ctx := newServer(t)
 
