@@ -133,10 +133,10 @@ func handleAddNewProduct(db *category.DB) http.HandlerFunc {
 	type request struct {
 		Name     *string `json:"name"`
 		Stock    int64   `json:"stock"`
-		Category string  `json:"string"`
+		Category string  `json:"category"`
 	}
 	type response struct {
-		ID int64 `json:"product_id"`
+		ID int64 `json:"id"`
 	}
 	parse := func(w http.ResponseWriter, r *http.Request) (stock int64, name, category string, err error) {
 		v, err := Decode[request](w, r, 0, 0)
@@ -280,7 +280,7 @@ func handleAddNewCategory(db *category.DB) http.HandlerFunc {
 		Name *string `json:"name"`
 	}
 	type response struct {
-		ID int64 `json:"fileId"`
+		ID int64 `json:"id"`
 	}
 	parse := func(w http.ResponseWriter, r *http.Request) (string, error) {
 		v, err := Decode[request](w, r, 0, 0)
