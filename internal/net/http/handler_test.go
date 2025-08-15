@@ -34,6 +34,14 @@ func Test_handleGetCategory(t *testing.T) {
 		is.Equal(t, len(cc.Data), 1)
 		is.Equal(t, cc.Data[0].Name, "test")
 	})
+
+	t.Run("ErrNotFound", func(t *testing.T) {
+		s, ctx := newServer(t)
+
+		resp, err := get(ctx, s, "/categories/1")
+		is.OK(t, err) // GET /categories/{category}
+		is.Equal(t, resp.StatusCode, http.StatusNotFound)
+	})
 }
 
 func newServer(t testing.TB) (*httptest.Server, context.Context) {

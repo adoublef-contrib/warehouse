@@ -268,7 +268,7 @@ func handleGetCategoryByID(db *category.DB) http.HandlerFunc {
 		ctx := r.Context()
 		c, err := db.Category(ctx, id)
 		if err != nil {
-			handleError(w, r, err, http.StatusInternalServerError)
+			handleError(w, r, err, http.StatusNotFound)
 			return
 		}
 		respond(w, r, response{Data: []category.Category{c}}, http.StatusOK)
