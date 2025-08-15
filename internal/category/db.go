@@ -6,6 +6,7 @@ import (
 	"fmt"
 
 	"github.com/jackc/pgx/v5/pgxpool"
+	"go.adoublef.dev/runtime/debug"
 )
 
 type DB struct {
@@ -74,16 +75,17 @@ func (d *DB) DeleteCategory(ctx context.Context, id int64) (int64, error) {
 }
 
 func (d *DB) Product(ctx context.Context, id int64) (Product, error) {
-	const stmt = "SELECT * FROM products WHERE product_id=$1"
+	const stmt = "SELECT product_id, product_name, stock FROM products WHERE product_id=$1"
 	row := d.RWC.QueryRow(ctx, stmt, id)
 	var p Product
-	err := row.Scan(&p.ID, &p.Category, &p.Name, &p.Stock)
+	err := row.Scan(&p.ID, &p.Name, &p.Stock)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return Product{}, fmt.Errorf("product with id %d not found", id)
 		}
 		return Product{}, err
 	}
+	debug.Printf("%+v", p)
 	return p, nil
 }
 
@@ -119,7 +121,7 @@ func (d *DB) ProductsByCategory(ctx context.Context, category string) ([]Product
 	var pp []Product
 	for rr.Next() {
 		var p Product
-		if err := rr.Scan(&p.ID, &p.Name, &p.Stock, &p.Category); err != nil {
+		if err := rr.Scan(&p.ID, &p.Name, &p.Stock); err != nil {
 			return nil, err
 		}
 		pp = append(pp, p)
@@ -152,8 +154,13 @@ func (d *DB) Products(ctx context.Context, limit, offset int64) ([]Product, erro
 }
 
 func (d *DB) AddProduct(ctx context.Context, name string, stock int64, category string) (int64, error) {
-	// Must be modified to not allow duplicate entries
-	const stmt = "INSERT INTO products (product_name, stock, category_id) VALUES ($1, $2, (SELECT category_id FROM categories WHERE category_name = $3)) RETURNING product_id"
+	const stmt = `
+WITH cat AS (
+  SELECT category_id FROM categories WHERE category_name = $3
+)
+INSERT INTO products (product_name, stock, category_id)
+SELECT $1, $2, category_id FROM cat
+RETURNING product_id;`
 	var id int64
 	err := d.RWC.QueryRow(ctx, stmt, name, stock, category).Scan(&id)
 	if err != nil {

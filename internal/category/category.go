@@ -6,8 +6,8 @@ type Category struct {
 }
 
 type Product struct {
-	ID       int    `json:"id,omitempty"`
-	Name     string `json:"name"`
-	Category string `json:"category"`
-	Stock    int    `json:"stock"`
+	ID   int    `json:"id,omitempty"`
+	Name string `json:"name"`
+	// Category string `json:"category"`
+	Stock int `json:"stock"`
 }

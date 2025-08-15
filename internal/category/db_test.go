@@ -107,17 +107,17 @@ func TestDB_DeleteProduct(t *testing.T) {
 func newDB(t testing.TB) *DB {
 	t.Helper()
 
-	tCtx := t.Context()
+	ctx := t.Context()
 
-	p, err := container.ConnectionPool(tCtx)
+	p, err := container.ConnectionPool(ctx)
 	is.OK(t, err) // container.ConnectionPool(ctx)
 	t.Cleanup(func() { p.Close() })
 
 	fsys := &postgres.FS{
 		URL: p.Config().ConnString(),
 	}
-	is.OK(t, fsys.Up(tCtx)) // fsys.Up
-	t.Cleanup(func() { fsys.Down(context.Background()) })
+	is.OK(t, fsys.Up(ctx)) // fsys.Up
+	t.Cleanup(func() { fsys.Down(context.Background()) /* fsys.Down */ })
 
 	return &DB{RWC: p}
 }
